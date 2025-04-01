@@ -191,12 +191,24 @@ class PromotionButton:
         self.hover = False
 
     def draw(self, screen):
-        # Draw button background with hover effect
-        bg_color = MENU_BUTTON_HOVER if self.hover else MENU_BUTTON_BG
-        pygame.draw.rect(screen, bg_color, self.rect, border_radius=10)
+        # Draw button background with shadow and hover effect
+        shadow_offset = 3
+        shadow_rect = self.rect.copy()
+        shadow_rect.x += shadow_offset
+        shadow_rect.y += shadow_offset
+        pygame.draw.rect(screen, (20, 20, 30), shadow_rect, border_radius=12)  # Shadow
         
-        # Draw piece
-        font = pygame.font.SysFont('segoeuisymbol', self.rect.height - 20)
+        # Button background
+        bg_color = (65, 65, 75) if self.hover else (55, 55, 65)
+        pygame.draw.rect(screen, bg_color, self.rect, border_radius=12)
+        
+        # Button border
+        border_color = (100, 149, 237) if self.hover else (75, 75, 85)  # Blue border on hover
+        pygame.draw.rect(screen, border_color, self.rect, 2, border_radius=12)
+        
+        # Draw piece with larger size and better positioning
+        font_size = int(self.rect.height * 0.7)  # Piece takes up 70% of button height
+        font = pygame.font.SysFont('segoeuisymbol', font_size)
         text = font.render(PIECES[self.color][self.piece_type], True, WHITE if self.color == 'white' else BLACK)
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
@@ -890,39 +902,50 @@ def draw_game_status(screen, current_player, is_check, is_mate):
 def show_promotion_menu(screen, pos, color):
     # Create semi-transparent overlay
     overlay = pygame.Surface((WINDOW_SIZE, WINDOW_SIZE), pygame.SRCALPHA)
-    overlay.fill((0, 0, 0, 128))
+    overlay.fill((0, 0, 0, 160))  # Slightly lighter overlay
     screen.blit(overlay, (0, 0))
     
     # Create promotion menu background
-    menu_width = 200
-    menu_height = 250
+    menu_width = 280
+    menu_height = 280
+    button_size = 80
+    padding = 20
+    
+    # Position the menu in the center of the board
     menu_x = (WINDOW_SIZE - menu_width) // 2
     menu_y = (WINDOW_SIZE - menu_height) // 2
     menu_rect = pygame.Rect(menu_x, menu_y, menu_width, menu_height)
     
-    # Draw menu background
-    pygame.draw.rect(screen, MENU_BG, menu_rect)
+    # Draw menu background with rounded corners and shadow effect
+    shadow_offset = 4
+    shadow_rect = menu_rect.copy()
+    shadow_rect.x += shadow_offset
+    shadow_rect.y += shadow_offset
+    pygame.draw.rect(screen, (20, 20, 30), shadow_rect, border_radius=15)  # Shadow
+    pygame.draw.rect(screen, (45, 45, 55), menu_rect, border_radius=15)  # Main background
+    pygame.draw.rect(screen, (75, 75, 85), menu_rect, 2, border_radius=15)  # Border
     
-    # Draw title
-    font = pygame.font.SysFont('Arial', 32)
-    title = font.render("Promote Pawn", True, WHITE)
-    title_rect = title.get_rect(center=(WINDOW_SIZE // 2, menu_y + 30))
+    # Draw title with better styling
+    font = pygame.font.SysFont('Arial', 36, bold=True)
+    title = font.render("Promote Pawn", True, MENU_TEXT_COLOR)
+    title_rect = title.get_rect(center=(WINDOW_SIZE // 2, menu_y + 40))
     screen.blit(title, title_rect)
     
-    # Create promotion buttons in 2x2 grid
-    button_size = 70
-    spacing = 20
-    start_x = menu_x + (menu_width - (2 * button_size + spacing)) // 2
-    start_y = menu_y + 70
+    # Calculate button positions in 2x2 grid with more space
+    grid_width = 2 * button_size + padding
+    grid_height = 2 * button_size + padding
+    start_x = menu_x + (menu_width - grid_width) // 2
+    start_y = menu_y + 80  # More space below title
     
     pieces = ['queen', 'rook', 'bishop', 'knight']
     buttons = []
     
+    # Create buttons in 2x2 grid
     for i, piece in enumerate(pieces):
         row = i // 2
         col = i % 2
-        x = start_x + col * (button_size + spacing)
-        y = start_y + row * (button_size + spacing)
+        x = start_x + col * (button_size + padding)
+        y = start_y + row * (button_size + padding)
         buttons.append(PromotionButton(x, y, button_size, button_size, piece, color))
     
     # Event loop for promotion selection
